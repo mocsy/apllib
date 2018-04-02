@@ -1,0 +1,8 @@
+[package]
+name = "apllib"
+version = "0.1.0"
+authors = ["kaluc"]
+
+[dependencies]
+euclid = "0.17.2"
+rand = "0.4.2"
