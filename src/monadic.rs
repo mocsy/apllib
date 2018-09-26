@@ -7,6 +7,7 @@ use self::euclid::num::{Ceil, Floor};
 // log, exp need trait as well
 use std::ops::Neg;
 use self::rand::{Rng, thread_rng};
+use self::rand::distributions::uniform::SampleUniform;
 
 /// Sign of value x
 /// Signum x
@@ -18,6 +19,7 @@ use self::rand::{Rng, thread_rng};
 /// assert_eq!(-1, apllib::sign(-123456789));
 /// assert_eq!(1, apllib::sign(123456789));
 /// ```
+/// #[doc(alias = "×")]
 pub fn sign<T> (x : T) -> T
     where T: PartialOrd + Default + From<i8> {
     if x < T::default() { return T::from(-1) }
@@ -44,8 +46,10 @@ pub fn sign<T> (x : T) -> T
 /// let signs = apllib::sign_map(b);
 /// assert_eq!(s, signs);
 /// ```
+/// #[doc(alias = "×")]
 pub fn sign_map<T> (iterable : T) -> T
-    where T : IntoIterator + std::iter::FromIterator<<T as IntoIterator>::Item>,
+    where T : IntoIterator
+    + std::iter::FromIterator<<T as IntoIterator>::Item>,
     <T as IntoIterator>::Item: PartialOrd + Default + From<i8> {
     iterable.into_iter().map(sign).collect()
 }
@@ -190,13 +194,42 @@ pub fn reciprocal (x: f64) -> f64 {
 }
 
 /// Roll x
-/// A random number
+/// A random number from default (usually 0) to (x-1) if x < default
+/// or (x-1) to default otherwise
 ///
 /// ```
-/// assert_ne!(8.0, apllib::roll(8.0));
-/// assert_ne!(128.0, apllib::roll(128.0));
-/// assert_ne!(123456789.0, apllib::roll(123456789.0));
+/// assert!(8.1 > apllib::roll(8.0));
+/// assert!(128.1 > apllib::roll(128.0));
+/// assert!(123456789.1 > apllib::roll(123456789.0));
+/// assert!(-4.1 < apllib::roll(-4) as f32);
 /// ```
-pub fn roll (x: f64) -> f64 {
-    thread_rng().gen_range::<f64>(0.0, x)
+pub fn roll<T> (x: T) -> T
+    where T: PartialOrd + SampleUniform + Default  {
+    let (small, big);
+    if x < T::default() {
+        small = x;
+        big = T::default();
+    } else {
+        small = T::default();
+        big = x;
+    }
+    let rand = thread_rng().gen_range::<T>(small, big);
+    T::from(rand)
+}
+
+/// Maps Roll over any Iterable
+/// 
+/// ```
+/// let a = vec![1, 1, 1, -4];
+/// let rolls = apllib::roll_map(a);
+/// for r in rolls {
+///     assert!(1.1 > r as f32);
+/// }
+/// ```
+/// #[doc(alias = "?")]
+pub fn roll_map<T> (iterable : T) -> T
+    where T : IntoIterator
+    + std::iter::FromIterator<<T as IntoIterator>::Item>,
+    <T as IntoIterator>::Item: PartialOrd + SampleUniform + Default {
+    iterable.into_iter().map(roll).collect()
 }
