@@ -2,7 +2,9 @@
 name = "apllib"
 version = "0.1.0"
 authors = ["mocsy"]
+edition = "2018"
 
 [dependencies]
 euclid = "0.19.0"
 rand = "0.5.5"
+num-traits = "0.2.6"
